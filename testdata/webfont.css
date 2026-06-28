@@ -1,0 +1,3 @@
+/* fixture */
+.nf-x:before,
+.nf-y::before { content: "\f123"; }
