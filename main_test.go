@@ -127,6 +127,19 @@ func TestCatalogPathDefaultsAndEnv(t *testing.T) {
 		t.Fatalf("catalog override catalogPath() = %q want %q", got, exact)
 	}
 }
+
+func TestVersionCommands(t *testing.T) {
+	for _, args := range [][]string{{"version"}, {"--version"}, {"-v"}} {
+		code, out, errOut := runAndCapture(t, args, nil)
+		if code != 0 {
+			t.Fatalf("version command failed: args=%v err=%s", args, errOut)
+		}
+		if strings.TrimSpace(out) != "clyph "+version {
+			t.Fatalf("version output = %q", out)
+		}
+	}
+}
+
 func TestSearchAndScalarCommands(t *testing.T) {
 	tmp := t.TempDir()
 	catalog := filepath.Join(tmp, "catalog.json")

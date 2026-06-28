@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	version        = "0.1.0-beta.1"
 	defaultLimit   = 10
 	defaultSource  = "https://www.nerdfonts.com/assets/css/webfont.css"
 	catalogPathEnv = "CLYPH_CATALOG_PATH"
@@ -697,7 +698,7 @@ func parseUpdateArgs(args []string) (source string, jsonOut bool, err error) {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: clyph <search|get|glyph|codepoint|update> ...")
+	fmt.Fprintln(os.Stderr, "usage: clyph <search|get|glyph|codepoint|update|version> ...")
 }
 
 func main() {
@@ -722,6 +723,9 @@ func run(args []string) int {
 		return cmdCodepoint(rest)
 	case "update":
 		return cmdUpdate(rest)
+	case "version", "--version", "-v":
+		fmt.Printf("clyph %s\n", version)
+		return 0
 	case "-h", "--help", "help":
 		usage()
 		return 0
