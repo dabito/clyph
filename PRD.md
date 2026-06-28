@@ -47,7 +47,16 @@ https://www.nerdfonts.com/assets/css/webfont.css
 ```
 
 The tool should parse class/name definitions and codepoints from this CSS into a local cache or generated catalog.
+Default catalog storage:
 
+```text
+~/.clyph/data/catalog.json
+```
+
+Environment overrides:
+
+- `CLYPH_DATA_DIR` changes the default data directory; the catalog path becomes `$CLYPH_DATA_DIR/catalog.json`.
+- `CLYPH_CATALOG_PATH` overrides the exact catalog file path and takes precedence over `CLYPH_DATA_DIR`.
 ## CLI menu
 
 ### `clyph search <query>`

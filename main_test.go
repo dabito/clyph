@@ -49,15 +49,22 @@ func runAndCapture(t *testing.T, args []string, env map[string]string) (int, str
 	}()
 	if env != nil {
 		oldEnv := map[string]string{}
+		wasSet := map[string]bool{}
 		for k, v := range env {
-			oldEnv[k] = os.Getenv(k)
+			oldEnv[k], wasSet[k] = os.LookupEnv(k)
 			if err := os.Setenv(k, v); err != nil {
 				t.Fatal(err)
 			}
 		}
 		defer func() {
 			for k, v := range oldEnv {
-				if err := os.Setenv(k, v); err != nil {
+				var err error
+				if wasSet[k] {
+					err = os.Setenv(k, v)
+				} else {
+					err = os.Unsetenv(k)
+				}
+				if err != nil {
 					t.Fatal(err)
 				}
 			}
@@ -96,11 +103,35 @@ func TestCatalogMetadata(t *testing.T) {
 	}
 }
 
+func TestCatalogPathDefaultsAndEnv(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("HOME", tmp)
+	t.Setenv(catalogPathEnv, "")
+	t.Setenv(dataDirEnv, "")
+
+	wantDefault := filepath.Join(tmp, ".clyph", "data", "catalog.json")
+	if got := catalogPath(); got != wantDefault {
+		t.Fatalf("default catalogPath() = %q want %q", got, wantDefault)
+	}
+
+	customData := filepath.Join(tmp, "custom-data")
+	t.Setenv(dataDirEnv, customData)
+	wantData := filepath.Join(customData, "catalog.json")
+	if got := catalogPath(); got != wantData {
+		t.Fatalf("data-dir catalogPath() = %q want %q", got, wantData)
+	}
+
+	exact := filepath.Join(tmp, "exact.json")
+	t.Setenv(catalogPathEnv, exact)
+	if got := catalogPath(); got != exact {
+		t.Fatalf("catalog override catalogPath() = %q want %q", got, exact)
+	}
+}
 func TestSearchAndScalarCommands(t *testing.T) {
 	tmp := t.TempDir()
 	catalog := filepath.Join(tmp, "catalog.json")
 	writeCatalog(t, catalog, fixtureRecords)
-	env := map[string]string{catalogEnv: catalog}
+	env := map[string]string{catalogPathEnv: catalog}
 
 	code, out, errOut := runAndCapture(t, []string{"search", "circle"}, env)
 	if code != 0 {
@@ -204,7 +235,7 @@ func TestCSSParserAndUpdate(t *testing.T) {
 	if err := os.WriteFile(cssPath, []byte(`.nf-x:before { content: "\f123"; }`), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	code, out, errOut := runAndCapture(t, []string{"update", "--source", cssPath, "--json"}, map[string]string{catalogEnv: catalog})
+	code, out, errOut := runAndCapture(t, []string{"update", "--source", cssPath, "--json"}, map[string]string{catalogPathEnv: catalog})
 	if code != 0 {
 		t.Fatalf("update failed: %s", errOut)
 	}
@@ -229,7 +260,7 @@ func TestCSSParserAndUpdate(t *testing.T) {
 
 	before := string(updated)
 	bad := filepath.Join(tmp, "missing.css")
-	code, _, errOut = runAndCapture(t, []string{"update", "--source", bad, "--json"}, map[string]string{catalogEnv: catalog})
+	code, _, errOut = runAndCapture(t, []string{"update", "--source", bad, "--json"}, map[string]string{catalogPathEnv: catalog})
 	if code == 0 || !strings.Contains(errOut, "update failed") {
 		t.Fatalf("expected failed update, got code=%d err=%q", code, errOut)
 	}
@@ -250,7 +281,7 @@ func TestArgumentAndUpdateGuards(t *testing.T) {
 	tmp := t.TempDir()
 	catalog := filepath.Join(tmp, "catalog.json")
 	writeCatalog(t, catalog, fixtureRecords)
-	env := map[string]string{catalogEnv: catalog}
+	env := map[string]string{catalogPathEnv: catalog}
 
 	code, _, errOut := runAndCapture(t, []string{"search", "circle", "--wat"}, env)
 	if code == 0 || !strings.Contains(errOut, "unknown flag: --wat") {

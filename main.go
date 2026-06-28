@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	defaultLimit  = 10
-	defaultSource = "https://www.nerdfonts.com/assets/css/webfont.css"
-	catalogEnv    = "CLYPH_CATALOG_PATH"
+	defaultLimit   = 10
+	defaultSource  = "https://www.nerdfonts.com/assets/css/webfont.css"
+	catalogPathEnv = "CLYPH_CATALOG_PATH"
+	dataDirEnv     = "CLYPH_DATA_DIR"
 )
 
 type Record struct {
@@ -65,10 +66,17 @@ type cliError struct{ msg string }
 func (e cliError) Error() string { return e.msg }
 
 func catalogPath() string {
-	if v := os.Getenv(catalogEnv); v != "" {
+	if v := os.Getenv(catalogPathEnv); v != "" {
 		return v
 	}
-	return filepath.Join("data", "catalog.json")
+	if v := os.Getenv(dataDirEnv); v != "" {
+		return filepath.Join(v, "catalog.json")
+	}
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		return filepath.Join(".clyph", "data", "catalog.json")
+	}
+	return filepath.Join(home, ".clyph", "data", "catalog.json")
 }
 
 func unicodeEscape(r rune) string {
