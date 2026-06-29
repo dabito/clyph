@@ -7,12 +7,6 @@ Search glyph names, print exact glyphs, return codepoints, and refresh a local o
 ## Install
 
 ```bash
-go install github.com/dabito/clyph@v0.1.0-beta.1
-```
-
-After stable release, `@latest` works too:
-
-```bash
 go install github.com/dabito/clyph@latest
 ```
 
