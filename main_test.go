@@ -285,6 +285,67 @@ func TestCSSParserAndUpdate(t *testing.T) {
 		t.Fatal("catalog changed after failed update")
 	}
 }
+func TestCSSParserMalformedAndShifted(t *testing.T) {
+	// Covers malformed / shifted CSS block shapes so an upstream markup
+	// change degrades gracefully instead of silently dropping glyphs or
+	// crashing. Asserts no error, no panic, and graceful skipping.
+	css := `
+.nf-ok:before { content: "\f111"; }
+.nf-no-content:before { color: red; }
+.nf-unquoted:before { content: \f222; }
+.nf-empty:before { content: ""; }
+.nf-singlequote:before { content: '\f333'; }
+.nf-multirune:before { content: "\f444\f555"; }
+.nf-comment-in-body:before { /* x */ content: "\f666"; /* y */ }
+.nf-nodot:before { content: "\f777"; }
+`
+	recs, err := parseCSSCatalog(css)
+	if err != nil {
+		t.Fatalf("parser returned error on malformed css: %v", err)
+	}
+	idx := buildIndex(recs)
+
+	// Well-formed blocks still parse.
+	if idx["nf-ok"].Codepoint != "f111" {
+		t.Fatalf("nf-ok missing or wrong: %#v", idx["nf-ok"])
+	}
+	if idx["nf-singlequote"].Codepoint != "f333" {
+		t.Fatalf("nf-singlequote missing or wrong: %#v", idx["nf-singlequote"])
+	}
+	if idx["nf-comment-in-body"].Codepoint != "f666" {
+		t.Fatalf("nf-comment-in-body missing or wrong: %#v", idx["nf-comment-in-body"])
+	}
+
+	// Blocks without a quoted content property are skipped, not errored.
+	for _, name := range []string{"nf-no-content", "nf-unquoted", "nf-empty"} {
+		if _, ok := idx[name]; ok {
+			t.Fatalf("%s should be skipped, got record", name)
+		}
+	}
+
+	// Multi-rune content collapses to the first rune (documented behavior).
+	if rec, ok := idx["nf-multirune"]; !ok || rec.Codepoint != "f444" {
+		t.Fatalf("nf-multirune should collapse to first rune, got %#v", idx["nf-multirune"])
+	}
+
+	// A selector without a leading dot is still accepted as a class name.
+	if idx["nf-nodot"].Codepoint != "f777" {
+		t.Fatalf("nf-nodot missing or wrong: %#v", idx["nf-nodot"])
+	}
+
+	// An unclosed brace must not panic or error. The dangling block is
+	// dropped; well-formed blocks parsed before it survive.
+	unclosed := `.nf-first:before { content: "\f001"; }
+.nf-unclosed:before { content: "\f002";`
+	if recs, err := parseCSSCatalog(unclosed); err != nil {
+		t.Fatalf("parser errored on unclosed brace: %v", err)
+	} else {
+		idx := buildIndex(recs)
+		if idx["nf-first"].Codepoint != "f001" {
+			t.Fatalf("nf-first should survive before unclosed brace: %#v", idx["nf-first"])
+		}
+	}
+}
 
 func TestArgumentAndUpdateGuards(t *testing.T) {
 	if glyph, err := codepointToGlyph("0xf012c"); err != nil || glyph != "\U000f012c" {

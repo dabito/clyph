@@ -4,6 +4,8 @@
 
 Search glyph names, print exact glyphs, return codepoints, and refresh a local offline catalog from Nerd Fonts CSS.
 
+Repo: <https://github.com/dabito/clyph> · Issues: <https://github.com/dabito/clyph/issues>
+
 ## Install
 
 ```bash
@@ -76,6 +78,29 @@ Print a glyph inside shell output:
 printf "status: %s done\n" "$(clyph glyph nf-md-check)"
 ```
 
+## Sample output
+
+```text
+$ clyph search circle --limit 5
+nf-cod-arrow_circle_down	ebfc		-
+nf-cod-arrow_circle_left	ebfd		-
+nf-cod-arrow_circle_right	ebfe		-
+nf-cod-arrow_circle_up	ebff		-
+nf-cod-circle	eabc		-
+
+$ clyph get nf-md-check
+nf-md-check	f012c	󰄬	-
+
+$ clyph update --json
+{
+  "status": "updated",
+  "records": 10764,
+  "catalog": "/home/user/.clyph/data/catalog.json"
+}
+```
+
+Plain output is tab-separated: `name`, `codepoint`, `glyph`, `label`. Use `--json` for stable machine-readable output.
+
 ## Commands
 
 ```text
@@ -86,6 +111,14 @@ clyph codepoint <name> [--json]
 clyph update [--source <file-or-url>] [--json]
 clyph version
 ```
+
+## Failure modes
+
+- **Missing catalog**: every lookup command fails with exit code `1` until `clyph update` has been run once.
+- **Empty search**: `clyph search <query>` with no matches prints nothing and exits `0`; pass `--json` to get an empty `matches` array.
+- **Bad CSS source**: `clyph update --source <file-or-url>` rejects a source that parses to zero glyph records (exit `1`) and leaves the existing catalog untouched.
+- **Network failure**: `clyph update` against a URL reports `update failed: ...` and exits `1` without modifying the catalog.
+- **Unknown name**: `clyph get|glyph|codepoint <name>` prints `not found: <name>` to stderr and exits `1`.
 
 ## Development
 
