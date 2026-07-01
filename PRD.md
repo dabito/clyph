@@ -53,10 +53,9 @@ Default catalog storage:
 ~/.clyph/data/catalog.json
 ```
 
-Environment overrides:
+Environment override:
 
-- `CLYPH_DATA_DIR` changes the default data directory; the catalog path becomes `$CLYPH_DATA_DIR/catalog.json`.
-- `CLYPH_CATALOG_PATH` overrides the exact catalog file path and takes precedence over `CLYPH_DATA_DIR`.
+- `CLYPH_CATALOG_PATH` overrides the exact catalog file path. (A single-file data model is intentional: it keeps the door open for a future multi-data merge.)
 ## CLI menu
 
 ### `clyph search <query>`

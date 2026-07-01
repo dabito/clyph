@@ -13,11 +13,10 @@ import (
 )
 
 const (
-	version        = "0.1.0-beta.2"
+	version        = "0.1.0-beta.3"
 	defaultLimit   = 10
 	defaultSource  = "https://www.nerdfonts.com/assets/css/webfont.css"
 	catalogPathEnv = "CLYPH_CATALOG_PATH"
-	dataDirEnv     = "CLYPH_DATA_DIR"
 )
 
 type Record struct {
@@ -69,9 +68,6 @@ func (e cliError) Error() string { return e.msg }
 func catalogPath() string {
 	if v := os.Getenv(catalogPathEnv); v != "" {
 		return v
-	}
-	if v := os.Getenv(dataDirEnv); v != "" {
-		return filepath.Join(v, "catalog.json")
 	}
 	home, err := os.UserHomeDir()
 	if err != nil || home == "" {

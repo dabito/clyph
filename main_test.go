@@ -107,18 +107,10 @@ func TestCatalogPathDefaultsAndEnv(t *testing.T) {
 	tmp := t.TempDir()
 	t.Setenv("HOME", tmp)
 	t.Setenv(catalogPathEnv, "")
-	t.Setenv(dataDirEnv, "")
 
 	wantDefault := filepath.Join(tmp, ".clyph", "data", "catalog.json")
 	if got := catalogPath(); got != wantDefault {
 		t.Fatalf("default catalogPath() = %q want %q", got, wantDefault)
-	}
-
-	customData := filepath.Join(tmp, "custom-data")
-	t.Setenv(dataDirEnv, customData)
-	wantData := filepath.Join(customData, "catalog.json")
-	if got := catalogPath(); got != wantData {
-		t.Fatalf("data-dir catalogPath() = %q want %q", got, wantData)
 	}
 
 	exact := filepath.Join(tmp, "exact.json")

@@ -44,11 +44,10 @@ Default catalog path:
 ~/.clyph/data/catalog.json
 ```
 
-Environment overrides:
+Environment override:
 
 ```bash
-export CLYPH_DATA_DIR="$HOME/.clyph/data"          # uses $CLYPH_DATA_DIR/catalog.json
-export CLYPH_CATALOG_PATH="$PWD/data/catalog.json" # exact file override, takes precedence
+export CLYPH_CATALOG_PATH="$PWD/data/catalog.json" # exact catalog file override
 ```
 
 ## Usage
