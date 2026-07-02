@@ -5,7 +5,12 @@ All notable changes to `clyph` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.0-beta.4] - 2026-07-01
+
+### Changed
+- Split core code into `catalog.go`, `css.go`, and `cli.go`.
+- Rejected negative `--limit` values.
+- README now has shared-family, Requirements, Behavior notes, and Related packages sections.
 
 ## [0.1.0-beta.3] - 2026-06-30
 
@@ -36,7 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tab-separated plain output and stable JSON output.
 - Test suite covering CLI paths, CSS parser, env overrides, update rollback, and empty-source rejection.
 
-[Unreleased]: https://github.com/dabito/clyph/compare/v0.1.0-beta.3...HEAD
+[Unreleased]: https://github.com/dabito/clyph/compare/v0.1.0-beta.4...HEAD
+[0.1.0-beta.4]: https://github.com/dabito/clyph/compare/v0.1.0-beta.3...v0.1.0-beta.4
 [0.1.0-beta.3]: https://github.com/dabito/clyph/compare/v0.1.0-beta.2...v0.1.0-beta.3
 [0.1.0-beta.2]: https://github.com/dabito/clyph/compare/v0.1.0-beta.1...v0.1.0-beta.2
 [0.1.0-beta.1]: https://github.com/dabito/clyph/releases/tag/v0.1.0-beta.1

@@ -354,6 +354,11 @@ func TestArgumentAndUpdateGuards(t *testing.T) {
 		t.Fatalf("expected unknown flag error, code=%d err=%q", code, errOut)
 	}
 
+	code, _, errOut = runAndCapture(t, []string{"search", "circle", "--limit", "-1"}, env)
+	if code == 0 || !strings.Contains(errOut, "--limit must be non-negative") {
+		t.Fatalf("expected negative limit error, code=%d err=%q", code, errOut)
+	}
+
 	before, err := os.ReadFile(catalog)
 	if err != nil {
 		t.Fatal(err)

@@ -4,7 +4,14 @@
 
 Search glyph names, print exact glyphs, return codepoints, and refresh a local offline catalog from Nerd Fonts CSS.
 
+`clyph` is part of the [dabito](https://github.com/dabito) shell tooling family — small, deterministic CLIs and pi extensions that share a visual language based on Nerd Fonts.
+
 Repo: <https://github.com/dabito/clyph> · Issues: <https://github.com/dabito/clyph/issues>
+
+## Requirements
+
+- Go 1.22 or later
+- No external dependencies — uses Go standard library only
 
 ## Install
 
@@ -111,6 +118,12 @@ clyph update [--source <file-or-url>] [--json]
 clyph version
 ```
 
+## Behavior notes
+
+- **search --limit**: `--limit N` caps results to N. `--limit 0` returns at most 1 result (the `>=` comparison fires after the first append). Negative values are rejected with exit code 2.
+- **Multi-rune CSS content**: Nerd Fonts CSS `content` values containing multiple Unicode escapes (e.g. `"\f444\f555"`) collapse to the first rune. Only the first codepoint is recorded; subsequent runes are dropped.
+- **Label and alias preservation**: `clyph update` merges fresh records from the source CSS with existing catalog metadata. User-assigned `label` and `aliases` on existing records survive a catalog refresh — only glyphs absent from the new source are removed.
+
 ## Failure modes
 
 - **Missing catalog**: every lookup command fails with exit code `1` until `clyph update` has been run once.
@@ -118,6 +131,10 @@ clyph version
 - **Bad CSS source**: `clyph update --source <file-or-url>` rejects a source that parses to zero glyph records (exit `1`) and leaves the existing catalog untouched.
 - **Network failure**: `clyph update` against a URL reports `update failed: ...` and exits `1` without modifying the catalog.
 - **Unknown name**: `clyph get|glyph|codepoint <name>` prints `not found: <name>` to stderr and exits `1`.
+
+## Related packages
+
+- [pi-cake](https://github.com/dabito/pi-cake) — pi extension for rendering glyph dictionaries; can call `clyph` to resolve glyph names at build time
 
 ## Development
 
