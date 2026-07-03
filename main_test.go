@@ -212,6 +212,117 @@ func TestSearchAndScalarCommands(t *testing.T) {
 	}
 }
 
+func TestSearchSpaceUnderscoreEquivalence(t *testing.T) {
+	tmp := t.TempDir()
+	catalog := filepath.Join(tmp, "catalog.json")
+	writeCatalog(t, catalog, fixtureRecords)
+	env := map[string]string{catalogPathEnv: catalog}
+
+	code, out, errOut := runAndCapture(t, []string{"search", "circle o"}, env)
+	if code != 0 {
+		t.Fatalf("search failed: %s", errOut)
+	}
+	if strings.TrimSpace(out) != "nf-fa-circle_o\tf10c\t\toffline outline" {
+		t.Fatalf("space query did not match underscored name: %q", out)
+	}
+}
+
+func TestJSONErrorsAreStructured(t *testing.T) {
+	tmp := t.TempDir()
+	catalog := filepath.Join(tmp, "catalog.json")
+	writeCatalog(t, catalog, fixtureRecords)
+	env := map[string]string{catalogPathEnv: catalog}
+
+	code, _, errOut := runAndCapture(t, []string{"get", "nope", "--json"}, env)
+	if code == 0 {
+		t.Fatalf("expected non-zero exit for not-found")
+	}
+	var payload errorResponse
+	if err := json.Unmarshal([]byte(errOut), &payload); err != nil {
+		t.Fatalf("--json not-found error was not JSON: %q (%v)", errOut, err)
+	}
+	if payload.Error != "not found: nope" {
+		t.Fatalf("unexpected error payload: %#v", payload)
+	}
+
+	missing := filepath.Join(tmp, "missing.json")
+	code, _, errOut = runAndCapture(t, []string{"get", "nope", "--json"}, map[string]string{catalogPathEnv: missing})
+	if code == 0 {
+		t.Fatalf("expected non-zero exit for missing catalog")
+	}
+	if err := json.Unmarshal([]byte(errOut), &payload); err != nil {
+		t.Fatalf("--json missing-catalog error was not JSON: %q (%v)", errOut, err)
+	}
+	if !strings.Contains(payload.Error, "run 'clyph update' first") {
+		t.Fatalf("missing-catalog error not actionable: %q", payload.Error)
+	}
+}
+
+func TestLabelAndAliasCommands(t *testing.T) {
+	tmp := t.TempDir()
+	catalog := filepath.Join(tmp, "catalog.json")
+	writeCatalog(t, catalog, fixtureRecords)
+	env := map[string]string{catalogPathEnv: catalog}
+
+	code, out, errOut := runAndCapture(t, []string{"label", "nf-md-check", "checkmark", "--json"}, env)
+	if code != 0 {
+		t.Fatalf("label set failed: %s", errOut)
+	}
+	var rec Record
+	if err := json.Unmarshal([]byte(out), &rec); err != nil {
+		t.Fatal(err)
+	}
+	if rec.Label != "checkmark" {
+		t.Fatalf("label not set: %#v", rec)
+	}
+
+	code, _, errOut = runAndCapture(t, []string{"label", "nf-md-check", "--clear"}, env)
+	if code != 0 {
+		t.Fatalf("label clear failed: %s", errOut)
+	}
+	records, err := loadRecords(catalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if buildIndex(records)["nf-md-check"].Label != "" {
+		t.Fatalf("label not cleared: %#v", buildIndex(records)["nf-md-check"])
+	}
+
+	code, _, errOut = runAndCapture(t, []string{"alias", "nf-md-check", "add", "tick"}, env)
+	if code != 0 {
+		t.Fatalf("alias add failed: %s", errOut)
+	}
+	records, err = loadRecords(catalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if aliases := buildIndex(records)["nf-md-check"].Aliases; len(aliases) != 1 || aliases[0] != "tick" {
+		t.Fatalf("alias not added: %#v", aliases)
+	}
+
+	code, _, errOut = runAndCapture(t, []string{"alias", "nf-md-check", "rm", "tick"}, env)
+	if code != 0 {
+		t.Fatalf("alias rm failed: %s", errOut)
+	}
+	records, err = loadRecords(catalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if aliases := buildIndex(records)["nf-md-check"].Aliases; len(aliases) != 0 {
+		t.Fatalf("alias not removed: %#v", aliases)
+	}
+
+	code, _, errOut = runAndCapture(t, []string{"label", "nope", "text"}, env)
+	if code == 0 || !strings.Contains(errOut, "not found: nope") {
+		t.Fatalf("expected not-found error, code=%d err=%q", code, errOut)
+	}
+
+	code, _, errOut = runAndCapture(t, []string{"alias", "nf-md-check", "bogus", "x"}, env)
+	if code == 0 || !strings.Contains(errOut, "alias op must be") {
+		t.Fatalf("expected op validation error, code=%d err=%q", code, errOut)
+	}
+}
+
 func TestCSSParserAndUpdate(t *testing.T) {
 	css := `
 /* comment */

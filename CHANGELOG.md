@@ -5,6 +5,23 @@ All notable changes to `clyph` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-beta.5] - 2026-07-02
+
+### Added
+- `clyph label <name> <text>` and `clyph label <name> --clear` to set/clear a record's label.
+- `clyph alias <name> add|rm <value>` to manage a record's aliases.
+
+### Changed
+- `--json` failures now emit `{"error": "..."}` on stderr instead of plain text, on every command.
+- `search` now normalizes underscores and spaces interchangeably, so `clyph search "arrow circle"` matches `arrow_circle_down`.
+- Missing-catalog errors now name the expected path and point at `clyph update` instead of surfacing the raw filesystem error.
+- README shared-family sentence now uses the canonical family text verbatim.
+- README Requirements now note the Nerd Font terminal requirement for rendering glyph output.
+
+### Fixed
+- Removed an unreachable "match everything" branch in `searchRecords` (empty query can never reach the CLI; `parseSearchArgs` already rejects it).
+- Removed a `Related packages` link to `pi-cake`, which isn't a published package (Lab-only, unpublished) and should never have been cross-linked from a public README.
+
 ## [0.1.0-beta.4] - 2026-07-01
 
 ### Changed
@@ -41,7 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tab-separated plain output and stable JSON output.
 - Test suite covering CLI paths, CSS parser, env overrides, update rollback, and empty-source rejection.
 
-[Unreleased]: https://github.com/dabito/clyph/compare/v0.1.0-beta.4...HEAD
+[Unreleased]: https://github.com/dabito/clyph/compare/v0.1.0-beta.5...HEAD
+[0.1.0-beta.5]: https://github.com/dabito/clyph/compare/v0.1.0-beta.4...v0.1.0-beta.5
 [0.1.0-beta.4]: https://github.com/dabito/clyph/compare/v0.1.0-beta.3...v0.1.0-beta.4
 [0.1.0-beta.3]: https://github.com/dabito/clyph/compare/v0.1.0-beta.2...v0.1.0-beta.3
 [0.1.0-beta.2]: https://github.com/dabito/clyph/compare/v0.1.0-beta.1...v0.1.0-beta.2

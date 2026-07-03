@@ -88,6 +88,9 @@ func recordFromParts(name, codepointHex string, aliases []string) (Record, error
 func loadRecords(path string) ([]Record, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("catalog not found at %s — run 'clyph update' first", path)
+		}
 		return nil, err
 	}
 	var payload catalogFile
@@ -115,6 +118,28 @@ func buildIndex(records []Record) map[string]Record {
 		idx[rec.Name] = rec
 	}
 	return idx
+}
+
+func replaceRecord(records []Record, updated Record) []Record {
+	out := make([]Record, len(records))
+	copy(out, records)
+	for i, rec := range out {
+		if rec.Name == updated.Name {
+			out[i] = updated
+			break
+		}
+	}
+	return out
+}
+
+func removeAlias(aliases []string, value string) []string {
+	out := make([]string, 0, len(aliases))
+	for _, alias := range aliases {
+		if alias != value {
+			out = append(out, alias)
+		}
+	}
+	return out
 }
 
 func saveRecords(records []Record, path string) error {
@@ -163,14 +188,14 @@ func mergeCatalog(existing, fresh []Record) []Record {
 // limit >= 1 caps results; limit < 0 means unlimited; limit == 0 returns at most 1
 // (the >= comparison fires immediately after the first append).
 func searchRecords(records []Record, query string, limit int) []Record {
-	needle := strings.ToLower(strings.TrimSpace(query))
+	needle := normalizeSearchText(query)
 	matches := make([]Record, 0)
 	for _, rec := range records {
-		haystacks := []string{strings.ToLower(rec.Name), strings.ToLower(rec.Label)}
+		haystacks := []string{normalizeSearchText(rec.Name), normalizeSearchText(rec.Label)}
 		for _, alias := range rec.Aliases {
-			haystacks = append(haystacks, strings.ToLower(alias))
+			haystacks = append(haystacks, normalizeSearchText(alias))
 		}
-		if needle == "" || containsAny(haystacks, needle) {
+		if containsAny(haystacks, needle) {
 			matches = append(matches, rec)
 			if limit >= 0 && len(matches) >= limit {
 				break
@@ -178,6 +203,12 @@ func searchRecords(records []Record, query string, limit int) []Record {
 		}
 	}
 	return matches
+}
+
+// normalizeSearchText lowercases and treats underscores as spaces, so a
+// query like "arrow circle" matches a Nerd Font name like "arrow_circle_down".
+func normalizeSearchText(s string) string {
+	return strings.ReplaceAll(strings.ToLower(strings.TrimSpace(s)), "_", " ")
 }
 
 func containsAny(haystacks []string, needle string) bool {
