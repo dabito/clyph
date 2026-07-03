@@ -184,25 +184,28 @@ func mergeCatalog(existing, fresh []Record) []Record {
 	return merged
 }
 
-// searchRecords returns records matching needle in name, label, or aliases.
-// limit >= 1 caps results; limit < 0 means unlimited; limit == 0 returns at most 1
-// (the >= comparison fires immediately after the first append).
-func searchRecords(records []Record, query string, limit int) []Record {
+// searchRecords returns the page of records matching needle in name, label,
+// or aliases starting at offset, plus the total number of matches before
+// offset/limit were applied (so callers can tell whether the result was
+// truncated instead of truncating silently). limit >= 0 caps the returned
+// slice to at most limit records; limit < 0 means unlimited.
+func searchRecords(records []Record, query string, limit, offset int) (matches []Record, total int) {
 	needle := normalizeSearchText(query)
-	matches := make([]Record, 0)
+	matches = make([]Record, 0)
 	for _, rec := range records {
 		haystacks := []string{normalizeSearchText(rec.Name), normalizeSearchText(rec.Label)}
 		for _, alias := range rec.Aliases {
 			haystacks = append(haystacks, normalizeSearchText(alias))
 		}
-		if containsAny(haystacks, needle) {
-			matches = append(matches, rec)
-			if limit >= 0 && len(matches) >= limit {
-				break
-			}
+		if !containsAny(haystacks, needle) {
+			continue
 		}
+		if total >= offset && (limit < 0 || len(matches) < limit) {
+			matches = append(matches, rec)
+		}
+		total++
 	}
-	return matches
+	return matches, total
 }
 
 // normalizeSearchText lowercases and treats underscores as spaces, so a
@@ -221,13 +224,38 @@ func containsAny(haystacks []string, needle string) bool {
 }
 
 func formatRow(rec Record) string {
-	label := rec.Label
-	if label == "" {
-		if len(rec.Aliases) > 0 {
-			label = strings.Join(rec.Aliases, "/")
-		} else {
-			label = "-"
+	return fmt.Sprintf("%s\t%s\t%s\t%s", rec.Name, rec.Codepoint, rec.Glyph, displayLabel(rec))
+}
+
+func displayLabel(rec Record) string {
+	if rec.Label != "" {
+		return rec.Label
+	}
+	if len(rec.Aliases) > 0 {
+		return strings.Join(rec.Aliases, "/")
+	}
+	return "-"
+}
+
+// formatRowsPretty space-pads the name and codepoint columns to the widest
+// value in the result set, so multi-row search output lines up regardless of
+// name length. Plain formatRow uses tabs, which only align when every name
+// happens to land on the same terminal tab stop — the default fixed-width
+// tab stop breaks down for the long, irregular Nerd Font names this catalog
+// is full of.
+func formatRowsPretty(records []Record) []string {
+	nameWidth, codepointWidth := 0, 0
+	for _, rec := range records {
+		if len(rec.Name) > nameWidth {
+			nameWidth = len(rec.Name)
+		}
+		if len(rec.Codepoint) > codepointWidth {
+			codepointWidth = len(rec.Codepoint)
 		}
 	}
-	return fmt.Sprintf("%s\t%s\t%s\t%s", rec.Name, rec.Codepoint, rec.Glyph, label)
+	rows := make([]string, 0, len(records))
+	for _, rec := range records {
+		rows = append(rows, fmt.Sprintf("%-*s  %-*s  %s  %s", nameWidth, rec.Name, codepointWidth, rec.Codepoint, rec.Glyph, displayLabel(rec)))
+	}
+	return rows
 }

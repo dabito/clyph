@@ -5,6 +5,21 @@ All notable changes to `clyph` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-07-02
+
+### Added
+- `clyph search --pretty` for space-aligned columns in a terminal. Default tab-separated output relies on fixed terminal tab stops, which drift out of alignment once a Nerd Font name is longer than one tab stop.
+- `clyph search --offset N` to page past `--limit`.
+- `--help`/`-h` on every subcommand (e.g. `clyph label --help`) for a one-line usage reminder, not just the top-level command.
+- `search` JSON output now includes `total` (match count before `--limit`/`--offset`) and `offset` fields alongside `matches`.
+
+### Changed
+- `search` default `--limit` raised from 10 to 100.
+- Truncated `search` results are no longer silent: plain output prints `showing START-END of TOTAL matches; use --offset/--limit to see more` to stderr whenever the page doesn't cover every match.
+
+### Fixed
+- `--limit 0` now returns zero matches (previously returned one, an off-by-one in the truncation check).
+
 ## [0.1.0-beta.5] - 2026-07-02
 
 ### Added
@@ -58,7 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tab-separated plain output and stable JSON output.
 - Test suite covering CLI paths, CSS parser, env overrides, update rollback, and empty-source rejection.
 
-[Unreleased]: https://github.com/dabito/clyph/compare/v0.1.0-beta.5...HEAD
+[Unreleased]: https://github.com/dabito/clyph/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/dabito/clyph/compare/v0.1.0-beta.5...v0.2.0
 [0.1.0-beta.5]: https://github.com/dabito/clyph/compare/v0.1.0-beta.4...v0.1.0-beta.5
 [0.1.0-beta.4]: https://github.com/dabito/clyph/compare/v0.1.0-beta.3...v0.1.0-beta.4
 [0.1.0-beta.3]: https://github.com/dabito/clyph/compare/v0.1.0-beta.2...v0.1.0-beta.3

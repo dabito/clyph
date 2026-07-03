@@ -9,14 +9,16 @@ import (
 )
 
 const (
-	version        = "0.1.0-beta.5"
-	defaultLimit   = 10
+	version        = "0.2.0"
+	defaultLimit   = 100
 	defaultSource  = "https://www.nerdfonts.com/assets/css/webfont.css"
 	catalogPathEnv = "CLYPH_CATALOG_PATH"
 )
 
 type searchResponse struct {
 	Query   string   `json:"query"`
+	Total   int      `json:"total"`
+	Offset  int      `json:"offset"`
 	Matches []Record `json:"matches"`
 }
 
@@ -67,7 +69,7 @@ func printError(jsonOut bool, msg string) {
 }
 
 func cmdSearch(args []string) int {
-	query, limit, jsonOut, err := parseSearchArgs(args)
+	query, limit, offset, jsonOut, pretty, err := parseSearchArgs(args)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 2
@@ -77,17 +79,30 @@ func cmdSearch(args []string) int {
 		printError(jsonOut, err.Error())
 		return 1
 	}
-	matches := searchRecords(records, query, limit)
+	matches, total := searchRecords(records, query, limit, offset)
 	if jsonOut {
-		resp := searchResponse{Query: query, Matches: matches}
+		resp := searchResponse{Query: query, Total: total, Offset: offset, Matches: matches}
 		if err := printJSON(resp); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
 		}
 		return 0
 	}
-	for _, rec := range matches {
-		fmt.Println(formatRow(rec))
+	if pretty {
+		for _, row := range formatRowsPretty(matches) {
+			fmt.Println(row)
+		}
+	} else {
+		for _, rec := range matches {
+			fmt.Println(formatRow(rec))
+		}
+	}
+	if offset > 0 || offset+len(matches) < total {
+		start, end := offset, offset
+		if len(matches) > 0 {
+			start, end = offset+1, offset+len(matches)
+		}
+		fmt.Fprintf(os.Stderr, "showing %d-%d of %d matches; use --offset/--limit to see more\n", start, end, total)
 	}
 	return 0
 }
@@ -286,39 +301,53 @@ func cmdAlias(args []string) int {
 	return 0
 }
 
-func parseSearchArgs(args []string) (query string, limit int, jsonOut bool, err error) {
+func parseSearchArgs(args []string) (query string, limit, offset int, jsonOut, pretty bool, err error) {
 	limit = defaultLimit
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		switch arg {
 		case "--json":
 			jsonOut = true
+		case "--pretty":
+			pretty = true
 		case "--limit":
 			i++
 			if i >= len(args) {
-				return "", 0, false, cliError{"missing value for --limit"}
+				return "", 0, 0, false, false, cliError{"missing value for --limit"}
 			}
 			limit, err = strconv.Atoi(args[i])
 			if err != nil {
-				return "", 0, false, cliError{"invalid --limit"}
+				return "", 0, 0, false, false, cliError{"invalid --limit"}
 			}
 			if limit < 0 {
-				return "", 0, false, cliError{"--limit must be non-negative"}
+				return "", 0, 0, false, false, cliError{"--limit must be non-negative"}
+			}
+		case "--offset":
+			i++
+			if i >= len(args) {
+				return "", 0, 0, false, false, cliError{"missing value for --offset"}
+			}
+			offset, err = strconv.Atoi(args[i])
+			if err != nil {
+				return "", 0, 0, false, false, cliError{"invalid --offset"}
+			}
+			if offset < 0 {
+				return "", 0, 0, false, false, cliError{"--offset must be non-negative"}
 			}
 		default:
 			if strings.HasPrefix(arg, "--") {
-				return "", 0, false, cliError{"unknown flag: " + arg}
+				return "", 0, 0, false, false, cliError{"unknown flag: " + arg}
 			}
 			if query != "" {
-				return "", 0, false, cliError{"too many arguments"}
+				return "", 0, 0, false, false, cliError{"too many arguments"}
 			}
 			query = arg
 		}
 	}
 	if query == "" {
-		return "", 0, false, cliError{"missing query"}
+		return "", 0, 0, false, false, cliError{"missing query"}
 	}
-	return query, limit, jsonOut, nil
+	return query, limit, offset, jsonOut, pretty, nil
 }
 
 func parseSingleNameArgs(args []string) (name string, jsonOut bool, err error) {
@@ -433,6 +462,25 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "usage: clyph <search|get|glyph|codepoint|update|label|alias|version> ...")
 }
 
+var commandUsage = map[string]string{
+	"search":    "usage: clyph search <query> [--limit N] [--offset N] [--json] [--pretty]",
+	"get":       "usage: clyph get <name> [--json]",
+	"glyph":     "usage: clyph glyph <name> [--json]",
+	"codepoint": "usage: clyph codepoint <name> [--json]",
+	"update":    "usage: clyph update [--source <file-or-url>] [--json]",
+	"label":     "usage: clyph label <name> <text> [--json]\n       clyph label <name> --clear [--json]",
+	"alias":     "usage: clyph alias <name> <add|rm> <value> [--json]",
+}
+
+func hasHelpFlag(args []string) bool {
+	for _, arg := range args {
+		if arg == "-h" || arg == "--help" {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
 	os.Exit(run(os.Args[1:]))
 }
@@ -444,6 +492,10 @@ func run(args []string) int {
 	}
 	cmd := args[0]
 	rest := args[1:]
+	if help, ok := commandUsage[cmd]; ok && hasHelpFlag(rest) {
+		fmt.Println(help)
+		return 0
+	}
 	switch cmd {
 	case "search":
 		return cmdSearch(rest)

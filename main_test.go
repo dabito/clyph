@@ -157,6 +157,25 @@ func TestSearchAndScalarCommands(t *testing.T) {
 		}
 	}
 
+	code, out, errOut = runAndCapture(t, []string{"search", "circle", "--pretty"}, env)
+	if code != 0 {
+		t.Fatalf("search pretty failed: %s", errOut)
+	}
+	gotPretty := strings.Split(strings.TrimSpace(out), "\n")
+	wantPretty := []string{
+		"nf-fa-circle       f111   \uf111  offline",
+		"nf-fa-circle_o     f10c   \uf10c  offline outline",
+		"nf-md-circle_half  f1395  \U000f1395  progress",
+	}
+	if len(gotPretty) != len(wantPretty) {
+		t.Fatalf("search pretty results mismatch: %q", gotPretty)
+	}
+	for i := range wantPretty {
+		if gotPretty[i] != wantPretty[i] {
+			t.Fatalf("search pretty[%d] = %q want %q", i, gotPretty[i], wantPretty[i])
+		}
+	}
+
 	code, out, errOut = runAndCapture(t, []string{"search", "check", "--json"}, env)
 	if code != 0 {
 		t.Fatalf("search json failed: %s", errOut)
@@ -165,11 +184,54 @@ func TestSearchAndScalarCommands(t *testing.T) {
 	if err := json.Unmarshal([]byte(out), &searchPayload); err != nil {
 		t.Fatal(err)
 	}
-	if searchPayload.Query != "check" || len(searchPayload.Matches) != 2 {
+	if searchPayload.Query != "check" || len(searchPayload.Matches) != 2 || searchPayload.Total != 2 {
 		t.Fatalf("unexpected search payload: %#v", searchPayload)
 	}
 	if searchPayload.Matches[1].Unicode != "\\U000f012c" {
 		t.Fatalf("unexpected unicode: %s", searchPayload.Matches[1].Unicode)
+	}
+
+	code, out, errOut = runAndCapture(t, []string{"search", "circle", "--limit", "2"}, env)
+	if code != 0 {
+		t.Fatalf("truncated search failed: %s", errOut)
+	}
+	if got := strings.Split(strings.TrimSpace(out), "\n"); len(got) != 2 {
+		t.Fatalf("expected 2 truncated rows, got %q", got)
+	}
+	if !strings.Contains(errOut, "showing 1-2 of 3 matches") {
+		t.Fatalf("expected truncation notice, got %q", errOut)
+	}
+
+	code, out, errOut = runAndCapture(t, []string{"search", "circle", "--limit", "2", "--json"}, env)
+	if code != 0 {
+		t.Fatalf("truncated search json failed: %s", errOut)
+	}
+	if err := json.Unmarshal([]byte(out), &searchPayload); err != nil {
+		t.Fatal(err)
+	}
+	if searchPayload.Total != 3 || len(searchPayload.Matches) != 2 {
+		t.Fatalf("unexpected truncated json payload: %#v", searchPayload)
+	}
+
+	code, out, errOut = runAndCapture(t, []string{"search", "circle", "--offset", "1", "--limit", "1"}, env)
+	if code != 0 {
+		t.Fatalf("offset search failed: %s", errOut)
+	}
+	if strings.TrimSpace(out) != "nf-fa-circle_o\tf10c\t\toffline outline" {
+		t.Fatalf("unexpected offset page: %q", out)
+	}
+	if !strings.Contains(errOut, "showing 2-2 of 3 matches") {
+		t.Fatalf("expected offset notice, got %q", errOut)
+	}
+
+	code, _, errOut = runAndCapture(t, []string{"search", "circle", "--offset", "-1"}, env)
+	if code == 0 || !strings.Contains(errOut, "--offset must be non-negative") {
+		t.Fatalf("expected negative offset error, code=%d err=%q", code, errOut)
+	}
+
+	code, out, errOut = runAndCapture(t, []string{"search", "--help"}, env)
+	if code != 0 || !strings.Contains(out, "usage: clyph search") {
+		t.Fatalf("expected search usage, code=%d out=%q err=%q", code, out, errOut)
 	}
 
 	code, out, errOut = runAndCapture(t, []string{"get", "nf-md-check"}, env)

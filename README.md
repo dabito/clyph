@@ -92,6 +92,12 @@ $ clyph get nf-does-not-exist --json
 }
 ```
 
+Default plain output is tab-separated for scripts. In a terminal, tab stops make columns drift out of alignment once names vary in length — pass `--pretty` for space-padded, human-readable columns instead:
+
+```bash
+clyph search hand --pretty --limit 5
+```
+
 Print a glyph inside shell output:
 
 ```bash
@@ -107,9 +113,15 @@ nf-cod-arrow_circle_left	ebfd		-
 nf-cod-arrow_circle_right	ebfe		-
 nf-cod-arrow_circle_up	ebff		-
 nf-cod-circle	eabc		-
+showing 1-5 of 352 matches; use --offset/--limit to see more
 
 $ clyph get nf-md-check
 nf-md-check	f012c	󰄬	-
+
+$ clyph search hand --pretty --limit 3
+nf-dev-handlebars     e7f7  -
+nf-fa-hand            f256  -
+nf-fa-hand_back_fist  f255  -
 
 $ clyph update --json
 {
@@ -119,12 +131,12 @@ $ clyph update --json
 }
 ```
 
-Plain output is tab-separated: `name`, `codepoint`, `glyph`, `label`. Use `--json` for stable machine-readable output.
+Plain output is tab-separated: `name`, `codepoint`, `glyph`, `label`. Use `--json` for stable machine-readable output, or `--pretty` (search only) for space-aligned columns in a terminal.
 
 ## Commands
 
 ```text
-clyph search <query> [--limit N] [--json]
+clyph search <query> [--limit N] [--offset N] [--json] [--pretty]
 clyph get <name> [--json]
 clyph glyph <name> [--json]
 clyph codepoint <name> [--json]
@@ -135,9 +147,12 @@ clyph alias <name> <add|rm> <value> [--json]
 clyph version
 ```
 
+Any subcommand accepts `--help`/`-h` for a one-line usage reminder, e.g. `clyph label --help`.
+
 ## Behavior notes
 
-- **search --limit**: `--limit N` caps results to N. `--limit 0` returns at most 1 result (the `>=` comparison fires after the first append). Negative values are rejected with exit code 2.
+- **search --limit / --offset**: `--limit N` caps results to N; default is 100. `--offset N` skips the first N matches, for paging past the limit. `--limit 0` returns zero matches. Negative values for either flag are rejected with exit code 2. Truncation is never silent: when the page doesn't cover every match, plain output prints `showing START-END of TOTAL matches; use --offset/--limit to see more` to stderr, and `--json` output includes `total` and `offset` fields alongside `matches` so scripts can detect truncation without an extra request.
+- **search --pretty**: default plain output is tab-separated (`\t`), which relies on the terminal's fixed tab stops and drifts out of alignment once a name is longer than one tab stop — exactly the case for most Nerd Font names. `--pretty` space-pads the name and codepoint columns to the widest value in the result set instead. Script-facing default output is unchanged; `--pretty` is opt-in and ignored with `--json`.
 - **search matches underscores and spaces interchangeably**: Nerd Font names use underscores (`arrow_circle_down`); `clyph search "arrow circle"` normalizes both the query and catalog text so either form matches.
 - **Multi-rune CSS content**: Nerd Fonts CSS `content` values containing multiple Unicode escapes (e.g. `"\f444\f555"`) collapse to the first rune. Only the first codepoint is recorded; subsequent runes are dropped.
 - **Label and alias assignment**: `clyph label <name> <text>` sets a record's label (`--clear` removes it); `clyph alias <name> add|rm <value>` manages its alias list. `clyph update` then preserves these across a catalog refresh — only glyphs absent from the new source are removed.
