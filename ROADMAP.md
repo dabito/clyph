@@ -22,10 +22,12 @@ Found by building the binary and running every command/failure path directly, no
 - ~~No way to page past `--limit`.~~ Added `clyph search --offset N`; `searchRecords` now takes `(limit, offset)` and the truncation notice reports the shown page range.
 - ~~Support `--help`/`-h` on subcommands.~~ `run()` checks every subcommand's `rest` args for `-h`/`--help` against a `commandUsage` map before dispatch.
 
-### Minor polish
+### Minor polish (done 2026-07-02)
 
-- Support `--limit=5` (equals form), not just `--limit 5` (space form).
-- Omit empty `label`/`aliases: []` from JSON output (`omitempty`) to cut noise/tokens on the common case.
+- ~~Support `--limit=5` (equals form), not just `--limit 5` (space form).~~ Added a shared `flagValue` helper in `cli.go`; `--limit`, `--offset`, and `--source` all accept both forms now.
+- ~~Omit empty `label`/`aliases: []` from JSON output.~~ Added `omitempty` to `Record`'s JSON tags in `catalog.go`.
+
+Nothing outstanding on the roadmap besides the deferred GoReleaser item below.
 
 ## Deferred: GoReleaser
 

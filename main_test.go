@@ -132,6 +132,29 @@ func TestVersionCommands(t *testing.T) {
 	}
 }
 
+func TestRecordJSONOmitsEmptyLabelAndAliases(t *testing.T) {
+	rec := Record{Name: "nf-x", Codepoint: "f000", Unicode: "\\uf000", Glyph: ""}
+	data, err := json.Marshal(rec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := string(data)
+	if strings.Contains(out, `"label"`) || strings.Contains(out, `"aliases"`) {
+		t.Fatalf("expected label/aliases omitted when empty: %s", out)
+	}
+
+	rec.Label = "checkmark"
+	rec.Aliases = []string{"tick"}
+	data, err = json.Marshal(rec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out = string(data)
+	if !strings.Contains(out, `"label":"checkmark"`) || !strings.Contains(out, `"aliases":["tick"]`) {
+		t.Fatalf("expected label/aliases present when set: %s", out)
+	}
+}
+
 func TestSearchAndScalarCommands(t *testing.T) {
 	tmp := t.TempDir()
 	catalog := filepath.Join(tmp, "catalog.json")
@@ -232,6 +255,14 @@ func TestSearchAndScalarCommands(t *testing.T) {
 	code, out, errOut = runAndCapture(t, []string{"search", "--help"}, env)
 	if code != 0 || !strings.Contains(out, "usage: clyph search") {
 		t.Fatalf("expected search usage, code=%d out=%q err=%q", code, out, errOut)
+	}
+
+	code, out, errOut = runAndCapture(t, []string{"search", "circle", "--offset=1", "--limit=1"}, env)
+	if code != 0 {
+		t.Fatalf("equals-form flags failed: %s", errOut)
+	}
+	if strings.TrimSpace(out) != "nf-fa-circle_o\tf10c\t\toffline outline" {
+		t.Fatalf("unexpected equals-form page: %q", out)
 	}
 
 	code, out, errOut = runAndCapture(t, []string{"get", "nf-md-check"}, env)
@@ -413,9 +444,9 @@ func TestCSSParserAndUpdate(t *testing.T) {
 	if err := os.WriteFile(cssPath, []byte(`.nf-x:before { content: "\f123"; }`), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	code, out, errOut := runAndCapture(t, []string{"update", "--source", cssPath, "--json"}, map[string]string{catalogPathEnv: catalog})
+	code, out, errOut := runAndCapture(t, []string{"update", "--source=" + cssPath, "--json"}, map[string]string{catalogPathEnv: catalog})
 	if code != 0 {
-		t.Fatalf("update failed: %s", errOut)
+		t.Fatalf("update failed (equals-form --source): %s", errOut)
 	}
 	var payload updateResponse
 	if err := json.Unmarshal([]byte(out), &payload); err != nil {

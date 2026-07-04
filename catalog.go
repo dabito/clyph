@@ -16,8 +16,8 @@ type Record struct {
 	Codepoint string   `json:"codepoint"`
 	Unicode   string   `json:"unicode"`
 	Glyph     string   `json:"glyph"`
-	Label     string   `json:"label"`
-	Aliases   []string `json:"aliases"`
+	Label     string   `json:"label,omitempty"`
+	Aliases   []string `json:"aliases,omitempty"`
 }
 
 type catalogFile struct {

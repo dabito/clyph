@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	version        = "0.2.0"
+	version        = "0.2.1"
 	defaultLimit   = 100
 	defaultSource  = "https://www.nerdfonts.com/assets/css/webfont.css"
 	catalogPathEnv = "CLYPH_CATALOG_PATH"
@@ -45,6 +45,20 @@ type errorResponse struct {
 type cliError struct{ msg string }
 
 func (e cliError) Error() string { return e.msg }
+
+// flagValue resolves a flag's value, supporting both "--flag value" and
+// "--flag=value" forms. i is advanced past the value when the space form is
+// used. inline/hasInline come from splitting the raw arg on "=" up front.
+func flagValue(args []string, i *int, flagName, inline string, hasInline bool) (string, error) {
+	if hasInline {
+		return inline, nil
+	}
+	*i++
+	if *i >= len(args) {
+		return "", cliError{"missing value for " + flagName}
+	}
+	return args[*i], nil
+}
 
 func printJSON(v any) error {
 	data, err := json.MarshalIndent(v, "", "  ")
@@ -305,17 +319,18 @@ func parseSearchArgs(args []string) (query string, limit, offset int, jsonOut, p
 	limit = defaultLimit
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
-		switch arg {
+		name, inline, hasInline := strings.Cut(arg, "=")
+		switch name {
 		case "--json":
 			jsonOut = true
 		case "--pretty":
 			pretty = true
 		case "--limit":
-			i++
-			if i >= len(args) {
-				return "", 0, 0, false, false, cliError{"missing value for --limit"}
+			val, verr := flagValue(args, &i, "--limit", inline, hasInline)
+			if verr != nil {
+				return "", 0, 0, false, false, verr
 			}
-			limit, err = strconv.Atoi(args[i])
+			limit, err = strconv.Atoi(val)
 			if err != nil {
 				return "", 0, 0, false, false, cliError{"invalid --limit"}
 			}
@@ -323,11 +338,11 @@ func parseSearchArgs(args []string) (query string, limit, offset int, jsonOut, p
 				return "", 0, 0, false, false, cliError{"--limit must be non-negative"}
 			}
 		case "--offset":
-			i++
-			if i >= len(args) {
-				return "", 0, 0, false, false, cliError{"missing value for --offset"}
+			val, verr := flagValue(args, &i, "--offset", inline, hasInline)
+			if verr != nil {
+				return "", 0, 0, false, false, verr
 			}
-			offset, err = strconv.Atoi(args[i])
+			offset, err = strconv.Atoi(val)
 			if err != nil {
 				return "", 0, 0, false, false, cliError{"invalid --offset"}
 			}
@@ -375,15 +390,16 @@ func parseSingleNameArgs(args []string) (name string, jsonOut bool, err error) {
 func parseUpdateArgs(args []string) (source string, jsonOut bool, err error) {
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
-		switch arg {
+		name, inline, hasInline := strings.Cut(arg, "=")
+		switch name {
 		case "--json":
 			jsonOut = true
 		case "--source":
-			i++
-			if i >= len(args) {
-				return "", false, cliError{"missing value for --source"}
+			val, verr := flagValue(args, &i, "--source", inline, hasInline)
+			if verr != nil {
+				return "", false, verr
 			}
-			source = args[i]
+			source = val
 		default:
 			if strings.HasPrefix(arg, "--") {
 				return "", false, cliError{"unknown flag: " + arg}
