@@ -11,6 +11,20 @@ Built for AI coding agents: small local tools, typed inputs, deterministic text 
 
 Repo: <https://github.com/dabito/clyph> · Issues: <https://github.com/dabito/clyph/issues>
 
+## Demo
+
+![clyph demo](docs/demo/clyph.gif)
+
+Recorded terminal demo source: [`docs/demo/clyph.cast`](docs/demo/clyph.cast)
+
+Play locally:
+
+```bash
+asciinema play docs/demo/clyph.cast
+```
+
+The demo shows: catalog scale (`stats`, `families`), name search, printing a glyph, format conversion (`fmt` → html/css/unicode/js/hex/octal), reverse lookup (`identify`), scripting glyphs into status messages and status lines, and resolving a glyph by a live `alias` — all offline.
+
 ## Requirements
 
 - Go 1.22 or later
@@ -69,6 +83,10 @@ clyph get nf-md-check
 clyph glyph nf-md-check
 clyph codepoint nf-md-check
 clyph update --source ./webfont.css
+clyph identify 󰄬                   # reverse lookup: glyph char -> name/codepoint/family
+clyph fmt nf-md-check --format css # one name -> html/css/unicode/js/hex/octal
+clyph families --limit 5           # per-family glyph counts (md, fa, dev, ...)
+clyph stats                        # total records, families, labeled, aliased
 clyph label nf-md-check "checkmark"
 clyph alias nf-md-check add tick
 clyph version
@@ -143,6 +161,10 @@ clyph search <query> [--limit N] [--offset N] [--json] [--pretty]
 clyph get <name> [--json]
 clyph glyph <name> [--json]
 clyph codepoint <name> [--json]
+clyph identify <glyph...> [--json]   (reads glyphs from stdin if none given)
+clyph fmt <name> [--format html|css|unicode|js|hex|octal|all] [--json]
+clyph families [--limit N] [--json]
+clyph stats [--json]
 clyph update [--source <file-or-url>] [--json]
 clyph label <name> <text> [--json]
 clyph label <name> --clear [--json]

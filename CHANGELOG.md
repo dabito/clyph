@@ -5,6 +5,18 @@ All notable changes to `clyph` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.3.0] - 2026-07-09
+
+### Added
+- `clyph identify <glyph...> [--json]` — reverse lookup: glyph character -> name, codepoint, family. Reads glyphs from stdin when none are given.
+- `clyph fmt <name> [--format html|css|unicode|js|hex|octal|all] [--json]` — format a glyph's codepoint for HTML, CSS, JS, etc. Default `all` prints a labeled block; a single `--format` prints the bare value.
+- `clyph families [--limit N] [--json]` — per-family glyph counts, sorted by count desc.
+- `clyph stats [--json]` — catalog summary: total records, family count, labeled and aliased counts.
+- `ROADMAP.md`.
+- Terminal demo: `docs/demo/clyph.cast` + `docs/demo/clyph.gif`, with a `## Demo` section in the README.
+
 ## [0.2.1] - 2026-07-03
 
 ### Added
@@ -81,7 +93,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tab-separated plain output and stable JSON output.
 - Test suite covering CLI paths, CSS parser, env overrides, update rollback, and empty-source rejection.
 
-[Unreleased]: https://github.com/dabito/clyph/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/dabito/clyph/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/dabito/clyph/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/dabito/clyph/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/dabito/clyph/compare/v0.1.0-beta.5...v0.2.0
 [0.1.0-beta.5]: https://github.com/dabito/clyph/compare/v0.1.0-beta.4...v0.1.0-beta.5

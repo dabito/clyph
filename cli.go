@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	version        = "0.2.1"
+	version        = "0.3.0"
 	defaultLimit   = 100
 	defaultSource  = "https://www.nerdfonts.com/assets/css/webfont.css"
 	catalogPathEnv = "CLYPH_CATALOG_PATH"
@@ -475,7 +475,7 @@ func parseAliasArgs(args []string) (name, op, value string, jsonOut bool, err er
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: clyph <search|get|glyph|codepoint|update|label|alias|version> ...")
+	fmt.Fprintln(os.Stderr, "usage: clyph <search|get|glyph|codepoint|identify|fmt|families|stats|update|label|alias|version> ...")
 }
 
 var commandUsage = map[string]string{
@@ -486,6 +486,10 @@ var commandUsage = map[string]string{
 	"update":    "usage: clyph update [--source <file-or-url>] [--json]",
 	"label":     "usage: clyph label <name> <text> [--json]\n       clyph label <name> --clear [--json]",
 	"alias":     "usage: clyph alias <name> <add|rm> <value> [--json]",
+	"identify":  "usage: clyph identify <glyph...> [--json]   (reads glyphs from stdin if none given)",
+	"fmt":       "usage: clyph fmt <name> [--format html|css|unicode|js|hex|octal|all] [--json]",
+	"families":  "usage: clyph families [--limit N] [--json]",
+	"stats":     "usage: clyph stats [--json]",
 }
 
 func hasHelpFlag(args []string) bool {
@@ -527,6 +531,14 @@ func run(args []string) int {
 		return cmdLabel(rest)
 	case "alias":
 		return cmdAlias(rest)
+	case "identify":
+		return cmdIdentify(rest)
+	case "fmt":
+		return cmdFmt(rest)
+	case "families":
+		return cmdFamilies(rest)
+	case "stats":
+		return cmdStats(rest)
 	case "version", "--version", "-v":
 		fmt.Printf("clyph %s\n", version)
 		return 0
