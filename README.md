@@ -1,4 +1,7 @@
 # clyph
+[![Go Reference](https://pkg.go.dev/badge/github.com/dabito/clyph.svg)](https://pkg.go.dev/github.com/dabito/clyph)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Latest tag](https://img.shields.io/github/v/tag/dabito/clyph?label=version)](https://github.com/dabito/clyph/tags)
 
 `clyph` is a Nerd Font glyph lookup CLI for shell scripts, status lines, and agent-friendly UI work.
 
