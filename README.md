@@ -7,6 +7,10 @@
 
 Search glyph names, print exact glyphs, return codepoints, and refresh a local offline catalog from Nerd Fonts CSS.
 
+## Why clyph?
+
+Nerd Font glyphs are useful in prompts, status lines, TUIs, scripts, and agent-facing output, but searching web pages and copying codepoints by hand is slow. `clyph` makes glyphs local and scriptable: search offline, print the exact character, reverse-lookup a pasted glyph, format codepoints for CSS/HTML/JS, and resolve semantic names like `success` for stable visual language.
+
 Built for AI coding agents: small local tools, typed inputs, deterministic text output, bounded context, and explicit failure modes.
 
 Repo: <https://github.com/dabito/clyph> · Issues: <https://github.com/dabito/clyph/issues>
