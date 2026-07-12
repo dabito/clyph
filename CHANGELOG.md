@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-12
+
+### Added
+- `clyph semantic <concept> [--all] [--json]` — resolve concepts like `success`, `warning`, `upload`, and `branch` to curated glyphs.
+- `data/semantic.json` — embedded concept seed used by `semantic`, with `CLYPH_SEMANTIC_PATH` override for custom seeds.
+
+### Changed
+- Catalog loading now uses a disposable gob cache (`catalog.cache.gob`) when fresh, keeping JSON as canonical while reducing repeated lookup latency.
 ## [0.3.0] - 2026-07-09
 
 ### Added
@@ -93,7 +101,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tab-separated plain output and stable JSON output.
 - Test suite covering CLI paths, CSS parser, env overrides, update rollback, and empty-source rejection.
 
-[Unreleased]: https://github.com/dabito/clyph/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/dabito/clyph/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/dabito/clyph/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/dabito/clyph/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/dabito/clyph/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/dabito/clyph/compare/v0.1.0-beta.5...v0.2.0

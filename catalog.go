@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -85,20 +87,64 @@ func recordFromParts(name, codepointHex string, aliases []string) (Record, error
 	}, nil
 }
 
+func catalogCachePath(path string) string {
+	dir := filepath.Dir(path)
+	base := filepath.Base(path)
+	if ext := filepath.Ext(base); ext != "" {
+		base = strings.TrimSuffix(base, ext)
+	}
+	return filepath.Join(dir, base+".cache.gob")
+}
+
 func loadRecords(path string) ([]Record, error) {
-	data, err := os.ReadFile(path)
+	jsonInfo, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("catalog not found at %s — run 'clyph update' first", path)
 		}
 		return nil, err
 	}
+	cachePath := catalogCachePath(path)
+	if cacheInfo, err := os.Stat(cachePath); err == nil && !cacheInfo.ModTime().Before(jsonInfo.ModTime()) {
+		if recs, err := loadRecordsCache(cachePath); err == nil {
+			return recs, nil
+		}
+	}
+	recs, err := loadRecordsJSON(path)
+	if err != nil {
+		return nil, err
+	}
+	_ = saveRecordsCache(recs, cachePath)
+	return recs, nil
+}
+
+func loadRecordsJSON(path string) ([]Record, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
 	var payload catalogFile
 	if err := json.Unmarshal(data, &payload); err != nil {
 		return nil, err
 	}
-	recs := make([]Record, 0, len(payload.Records))
-	for _, rec := range payload.Records {
+	return normalizeRecords(payload.Records), nil
+}
+
+func loadRecordsCache(path string) ([]Record, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var records []Record
+	if err := gob.NewDecoder(bytes.NewReader(data)).Decode(&records); err != nil {
+		return nil, err
+	}
+	return normalizeRecords(records), nil
+}
+
+func normalizeRecords(records []Record) []Record {
+	recs := make([]Record, 0, len(records))
+	for _, rec := range records {
 		recs = append(recs, Record{
 			Name:      rec.Name,
 			Codepoint: strings.ToLower(rec.Codepoint),
@@ -109,7 +155,7 @@ func loadRecords(path string) ([]Record, error) {
 		})
 	}
 	sort.Slice(recs, func(i, j int) bool { return recs[i].Name < recs[j].Name })
-	return recs, nil
+	return recs
 }
 
 func buildIndex(records []Record) map[string]Record {
@@ -150,6 +196,22 @@ func saveRecords(records []Record, path string) error {
 		return err
 	}
 	data = append(data, '\n')
+	if err := saveBytesAtomic(path, data); err != nil {
+		return err
+	}
+	_ = saveRecordsCache(records, catalogCachePath(path))
+	return nil
+}
+
+func saveRecordsCache(records []Record, path string) error {
+	var buf bytes.Buffer
+	if err := gob.NewEncoder(&buf).Encode(records); err != nil {
+		return err
+	}
+	return saveBytesAtomic(path, buf.Bytes())
+}
+
+func saveBytesAtomic(path string, data []byte) error {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err

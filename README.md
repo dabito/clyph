@@ -85,6 +85,7 @@ clyph codepoint nf-md-check
 clyph update --source ./webfont.css
 clyph identify 󰄬                   # reverse lookup: glyph char -> name/codepoint/family
 clyph fmt nf-md-check --format css # one name -> html/css/unicode/js/hex/octal
+clyph semantic success             # concept -> canonical glyph (seed + aliases)
 clyph families --limit 5           # per-family glyph counts (md, fa, dev, ...)
 clyph stats                        # total records, families, labeled, aliased
 clyph label nf-md-check "checkmark"
@@ -163,6 +164,7 @@ clyph glyph <name> [--json]
 clyph codepoint <name> [--json]
 clyph identify <glyph...> [--json]   (reads glyphs from stdin if none given)
 clyph fmt <name> [--format html|css|unicode|js|hex|octal|all] [--json]
+clyph semantic <concept> [--all] [--json]
 clyph families [--limit N] [--json]
 clyph stats [--json]
 clyph update [--source <file-or-url>] [--json]
@@ -180,10 +182,12 @@ Value flags (`--limit`, `--offset`, `--source`) accept either `--flag value` or 
 
 - **search --limit / --offset**: `--limit N` caps results to N; default is 100. `--offset N` skips the first N matches, for paging past the limit. `--limit 0` returns zero matches. Negative values for either flag are rejected with exit code 2. Truncation is never silent: when the page doesn't cover every match, plain output prints `showing START-END of TOTAL matches; use --offset/--limit to see more` to stderr, and `--json` output includes `total` and `offset` fields alongside `matches` so scripts can detect truncation without an extra request.
 - **JSON omits empty `label`/`aliases`**: a record's `label` and `aliases` fields are left out of JSON output entirely when unset, instead of appearing as `"label": ""` and `"aliases": []`. Keeps output smaller for the common case where neither is set.
+- **Fast catalog cache**: JSON remains the canonical catalog. On first load, clyph writes a disposable gob cache next to it (`catalog.cache.gob`); later runs use the cache when it is newer than the JSON. Delete the cache anytime — clyph will rebuild it.
 - **search --pretty**: default plain output is tab-separated (`\t`), which relies on the terminal's fixed tab stops and drifts out of alignment once a name is longer than one tab stop — exactly the case for most Nerd Font names. `--pretty` space-pads the name and codepoint columns to the widest value in the result set instead. Script-facing default output is unchanged; `--pretty` is opt-in and ignored with `--json`.
 - **search matches underscores and spaces interchangeably**: Nerd Font names use underscores (`arrow_circle_down`); `clyph search "arrow circle"` normalizes both the query and catalog text so either form matches.
 - **Multi-rune CSS content**: Nerd Fonts CSS `content` values containing multiple Unicode escapes (e.g. `"\f444\f555"`) collapse to the first rune. Only the first codepoint is recorded; subsequent runes are dropped.
 - **Label and alias assignment**: `clyph label <name> <text>` sets a record's label (`--clear` removes it); `clyph alias <name> add|rm <value>` manages its alias list. `clyph update` then preserves these across a catalog refresh — only glyphs absent from the new source are removed.
+- **Semantic seed**: `clyph semantic <concept>` resolves from the embedded `data/semantic.json` seed first, then exact `label`/`alias` matches. Unknown concepts fall back to name search with `--all`. Set `CLYPH_SEMANTIC_PATH` to test or use a custom concept map.
 
 ## Failure modes
 

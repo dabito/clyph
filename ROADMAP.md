@@ -1,6 +1,6 @@
 # clyph roadmap
 
-Status: v0.2.1. clyph is the offline, scriptable, agent-friendly Nerd Fonts companion.
+Status: v0.3.0 + unreleased `semantic`. clyph is the offline, scriptable, agent-friendly Nerd Fonts companion.
 Goal: grow from a lookup CLI into the **visual-language layer** + a **build tool** for Nerd Fonts.
 
 Legend: ✓ shipped · → next · ○ later · ? optional
@@ -12,9 +12,9 @@ Legend: ✓ shipped · → next · ○ later · ? optional
 | `search` (substring, paginated, normalized) | ✓ | — | find glyphs by name |
 | `get` / `glyph` / `codepoint` | ✓ | — | exact lookup |
 | `label` / `alias` curation | ✓ | — | annotate catalog |
-| `identify` (reverse: glyph char → record) | → | low | paste a box, learn its name |
-| `fmt` (html / css / unicode / js / hex) | → | low | one name → code for any context |
-| `semantic` (concept → ranked glyphs) | ○ | med | ask for "success", get the icon |
+| `identify` (reverse: glyph char → record) | ✓ | low | paste a box, learn its name |
+| `fmt` (html / css / unicode / js / hex) | ✓ | low | one name → code for any context |
+| `semantic` (concept → ranked glyphs) | → | med | ask for "success", get the icon |
 | fuzzy search | ○ | med | typo-tolerant discovery |
 
 ## Pillar 2 — build tool
@@ -36,10 +36,10 @@ Legend: ✓ shipped · → next · ○ later · ? optional
 
 ## Phasing
 
-- **Phase A (0.2.x)** — `identify` + `fmt`. Quick wins, self-contained, high punch.
-- **Phase B (0.3.0)** — `semantic` + curated concept seed. Builds on `label`/`alias`.
-- **Phase C (0.4.0)** — `export` + `set`. Turns clyph into a build tool.
-- **Phase D (0.5.0)** — `check` + `diff`. CI / observability.
+- **Phase A (0.3.0)** — `identify` + `fmt` + `families` + `stats`. Quick wins, self-contained, high punch.
+- **Phase B (next)** — `semantic` + curated concept seed. Builds on `label`/`alias`.
+- **Phase C** — `export` + `set`. Turns clyph into a build tool.
+- **Phase D** — `check` + `diff`. CI / observability.
 - **Phase E (later)** — `sheet`/`browse`; evaluate `subset` on demand.
 
 ## Constraints

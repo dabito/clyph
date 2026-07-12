@@ -8,3 +8,6 @@ __pycache__/
 .pi/
 clyph
 *.test
+
+# clyph generated catalog cache
+data/*.cache.gob
