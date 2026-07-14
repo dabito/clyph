@@ -1,6 +1,6 @@
 # clyph roadmap
 
-Status: v0.3.0 + unreleased `semantic`. clyph is the offline, scriptable, agent-friendly Nerd Fonts companion.
+Status: v0.5.0 shipped: discovery helpers, semantic concepts, fast catalog cache, and export are live. Next: curated sets.
 Goal: grow from a lookup CLI into the **visual-language layer** + a **build tool** for Nerd Fonts.
 
 Legend: ✓ shipped · → next · ○ later · ? optional
@@ -14,15 +14,15 @@ Legend: ✓ shipped · → next · ○ later · ? optional
 | `label` / `alias` curation | ✓ | — | annotate catalog |
 | `identify` (reverse: glyph char → record) | ✓ | low | paste a box, learn its name |
 | `fmt` (html / css / unicode / js / hex) | ✓ | low | one name → code for any context |
-| `semantic` (concept → ranked glyphs) | → | med | ask for "success", get the icon |
+| `semantic` (concept → ranked glyphs) | ✓ | med | ask for "success", get the icon |
 | fuzzy search | ○ | med | typo-tolerant discovery |
 
 ## Pillar 2 — build tool
 
 | Feature | Status | Effort | Pitch |
 |---|---|---|---|
-| `export` (ts / go / css / json / html sheet) | ○ | med | generate typed icon modules |
-| `set` (curated, versioned collections) | ○ | med | ship a status-bar / file-type kit |
+| `export` (ts / go / css / json / html sheet) | ✓ | med | generate typed icon modules |
+| `set` (curated, versioned collections) | → | med | ship a status-bar / file-type kit |
 | `check` (validate glyph refs in configs) | ○ | med | catch dead refs in CI |
 | `diff` (catalog changes vs last update) | ○ | med | track upstream Nerd Fonts changes |
 | `subset` (strip font to used glyphs) | ? | high | shrink Nerd Font 90% for web/app |
@@ -37,8 +37,8 @@ Legend: ✓ shipped · → next · ○ later · ? optional
 ## Phasing
 
 - **Phase A (0.3.0)** — `identify` + `fmt` + `families` + `stats`. Quick wins, self-contained, high punch.
-- **Phase B (next)** — `semantic` + curated concept seed. Builds on `label`/`alias`.
-- **Phase C** — `export` + `set`. Turns clyph into a build tool.
+- **Phase B (0.4.0)** — `semantic` + curated concept seed + fast gob catalog cache. Builds on `label`/`alias`; improves repeated CLI startup latency.
+- **Phase C (0.5.0 + next)** — `export` shipped; `set` next. Turns clyph into a build tool.
 - **Phase D** — `check` + `diff`. CI / observability.
 - **Phase E (later)** — `sheet`/`browse`; evaluate `subset` on demand.
 
