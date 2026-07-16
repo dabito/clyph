@@ -7,11 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-07-14
+
 ### Added
 - Built-in curated glyph sets (`status`, `git`, `ci`, `files`) plus `clyph set list|show|glyph`.
 - User set config at `~/.clyph/config/sets.json`, with `CLYPH_SETS_PATH` override.
 - `clyph export --set <name>` to generate assets from curated sets.
-
 ## [0.5.0] - 2026-07-14
 
 ### Added
@@ -116,7 +117,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tab-separated plain output and stable JSON output.
 - Test suite covering CLI paths, CSS parser, env overrides, update rollback, and empty-source rejection.
 
-[Unreleased]: https://github.com/dabito/clyph/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/dabito/clyph/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/dabito/clyph/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/dabito/clyph/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/dabito/clyph/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/dabito/clyph/compare/v0.3.0...v0.4.0

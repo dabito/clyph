@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	version        = "0.5.0"
+	version        = "0.6.0"
 	defaultLimit   = 100
 	defaultSource  = "https://www.nerdfonts.com/assets/css/webfont.css"
 	catalogPathEnv = "CLYPH_CATALOG_PATH"

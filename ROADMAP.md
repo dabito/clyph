@@ -1,6 +1,6 @@
 # clyph roadmap
 
-Status: v0.5.0 shipped: discovery helpers, semantic concepts, fast catalog cache, and export are live. Next: curated sets.
+Status: v0.6.0 shipped: discovery helpers, semantic concepts, fast catalog cache, export, and curated sets are live. Next: validation/diff tooling.
 Goal: grow from a lookup CLI into the **visual-language layer** + a **build tool** for Nerd Fonts.
 
 Legend: ✓ shipped · → next · ○ later · ? optional
@@ -22,7 +22,7 @@ Legend: ✓ shipped · → next · ○ later · ? optional
 | Feature | Status | Effort | Pitch |
 |---|---|---|---|
 | `export` (ts / go / css / json / html sheet) | ✓ | med | generate typed icon modules |
-| `set` (curated, versioned collections) | → | med | ship a status-bar / file-type kit |
+| `set` (curated, versioned collections) | ✓ | med | ship a status-bar / file-type kit |
 | `check` (validate glyph refs in configs) | ○ | med | catch dead refs in CI |
 | `diff` (catalog changes vs last update) | ○ | med | track upstream Nerd Fonts changes |
 | `subset` (strip font to used glyphs) | ? | high | shrink Nerd Font 90% for web/app |
@@ -38,7 +38,7 @@ Legend: ✓ shipped · → next · ○ later · ? optional
 
 - **Phase A (0.3.0)** — `identify` + `fmt` + `families` + `stats`. Quick wins, self-contained, high punch.
 - **Phase B (0.4.0)** — `semantic` + curated concept seed + fast gob catalog cache. Builds on `label`/`alias`; improves repeated CLI startup latency.
-- **Phase C (0.5.0 + in progress)** — `export` shipped; `set` now adds curated kits. Turns clyph into a build tool.
+- **Phase C (0.5.0–0.6.0)** — `export` + `set` shipped. Turns clyph into a build tool.
 - **Phase D** — `check` + `diff`. CI / observability.
 - **Phase E (later)** — `sheet`/`browse`; evaluate `subset` on demand.
 
