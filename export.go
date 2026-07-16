@@ -15,6 +15,7 @@ type exportOptions struct {
 	Names     []string
 	Family    string
 	Semantics []string
+	Sets      []string
 	Output    string
 }
 
@@ -54,6 +55,12 @@ func parseExportArgs(args []string) (exportOptions, error) {
 				return opts, err
 			}
 			opts.Semantics = splitCSV(val)
+		case "--set":
+			val, err := flagValue(args, &i, "--set", inline, hasInline)
+			if err != nil {
+				return opts, err
+			}
+			opts.Sets = splitCSV(val)
 		case "--output", "-o":
 			val, err := flagValue(args, &i, name, inline, hasInline)
 			if err != nil {
@@ -96,7 +103,7 @@ func selectExportRecords(records []Record, opts exportOptions) ([]Record, error)
 	idx := buildIndex(records)
 	selected := map[string]Record{}
 	add := func(rec Record) { selected[rec.Name] = rec }
-	selecting := len(opts.Names) > 0 || opts.Family != "" || len(opts.Semantics) > 0
+	selecting := len(opts.Names) > 0 || opts.Family != "" || len(opts.Semantics) > 0 || len(opts.Sets) > 0
 	if !selecting {
 		for _, rec := range records {
 			add(rec)
@@ -128,6 +135,25 @@ func selectExportRecords(records []Record, opts exportOptions) ([]Record, error)
 				return nil, cliError{"no semantic match for: " + concept}
 			}
 			add(matches[0].Record)
+		}
+	}
+	if len(opts.Sets) > 0 {
+		sets, err := loadSets()
+		if err != nil {
+			return nil, err
+		}
+		for _, setName := range opts.Sets {
+			set, ok := sets[normalizeSetName(setName)]
+			if !ok {
+				return nil, cliError{"set not found: " + setName}
+			}
+			for _, glyphName := range set.Glyphs {
+				rec, ok := idx[glyphName]
+				if !ok {
+					return nil, cliError{"set references missing glyph: " + glyphName}
+				}
+				add(rec)
+			}
 		}
 	}
 	out := make([]Record, 0, len(selected))

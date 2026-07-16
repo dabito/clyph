@@ -38,7 +38,7 @@ Legend: ✓ shipped · → next · ○ later · ? optional
 
 - **Phase A (0.3.0)** — `identify` + `fmt` + `families` + `stats`. Quick wins, self-contained, high punch.
 - **Phase B (0.4.0)** — `semantic` + curated concept seed + fast gob catalog cache. Builds on `label`/`alias`; improves repeated CLI startup latency.
-- **Phase C (0.5.0 + next)** — `export` shipped; `set` next. Turns clyph into a build tool.
+- **Phase C (0.5.0 + in progress)** — `export` shipped; `set` now adds curated kits. Turns clyph into a build tool.
 - **Phase D** — `check` + `diff`. CI / observability.
 - **Phase E (later)** — `sheet`/`browse`; evaluate `subset` on demand.
 

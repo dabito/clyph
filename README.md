@@ -73,11 +73,14 @@ Default catalog path:
 ~/.clyph/data/catalog.json
 ```
 
-Environment override:
+Config and overrides:
 
 ```bash
 export CLYPH_CATALOG_PATH="$PWD/data/catalog.json" # exact catalog file override
+export CLYPH_SETS_PATH="$PWD/sets.json"         # merge custom sets over built-ins
 ```
+
+User-authored sets live at `~/.clyph/config/sets.json`; catalog data lives under `~/.clyph/data/`.
 
 ## Usage
 
@@ -90,6 +93,7 @@ clyph update --source ./webfont.css
 clyph identify 󰄬                   # reverse lookup: glyph char -> name/codepoint/family
 clyph fmt nf-md-check --format css # one name -> html/css/unicode/js/hex/octal
 clyph export --names nf-md-check --format ts # generate typed icon modules/assets
+clyph set show status               # curated set -> key/name/codepoint/glyph rows
 clyph semantic success             # concept -> canonical glyph (seed + aliases)
 clyph families --limit 5           # per-family glyph counts (md, fa, dev, ...)
 clyph stats                        # total records, families, labeled, aliased
@@ -107,6 +111,7 @@ clyph glyph nf-md-check --json
 clyph codepoint nf-md-check --json
 clyph update --json
 clyph label nf-md-check "checkmark" --json
+clyph export --set status --format ts
 clyph export --semantic success,warning --format json
 clyph alias nf-md-check add tick --json
 ```
@@ -170,7 +175,10 @@ clyph glyph <name> [--json]
 clyph codepoint <name> [--json]
 clyph identify <glyph...> [--json]   (reads glyphs from stdin if none given)
 clyph fmt <name> [--format html|css|unicode|js|hex|octal|all] [--json]
-clyph export [--format json|css|ts|go] [--names a,b] [--family nf-md|md] [--semantic success,warning] [--output <path>]
+clyph export [--format json|css|ts|go] [--names a,b] [--family nf-md|md] [--semantic success,warning] [--set status,git] [--output <path>]
+clyph set list [--json]
+clyph set show <name> [--json]
+clyph set glyph <set> <key> [--json]
 clyph semantic <concept> [--all] [--json]
 clyph families [--limit N] [--json]
 clyph stats [--json]
@@ -183,7 +191,7 @@ clyph version
 
 Any subcommand accepts `--help`/`-h` for a one-line usage reminder, e.g. `clyph label --help`.
 
-Value flags (`--limit`, `--offset`, `--source`, `--format`, `--names`, `--family`, `--semantic`, `--output`) accept either `--flag value` or `--flag=value`.
+Value flags (`--limit`, `--offset`, `--source`, `--format`, `--names`, `--family`, `--semantic`, `--set`, `--output`) accept either `--flag value` or `--flag=value`.
 
 ## Behavior notes
 
@@ -195,7 +203,8 @@ Value flags (`--limit`, `--offset`, `--source`, `--format`, `--names`, `--family
 - **Multi-rune CSS content**: Nerd Fonts CSS `content` values containing multiple Unicode escapes (e.g. `"\f444\f555"`) collapse to the first rune. Only the first codepoint is recorded; subsequent runes are dropped.
 - **Label and alias assignment**: `clyph label <name> <text>` sets a record's label (`--clear` removes it); `clyph alias <name> add|rm <value>` manages its alias list. `clyph update` then preserves these across a catalog refresh — only glyphs absent from the new source are removed.
 - **Semantic seed**: `clyph semantic <concept>` resolves from the embedded `data/semantic.json` seed first, then exact `label`/`alias` matches. Unknown concepts fall back to name search with `--all`. Set `CLYPH_SEMANTIC_PATH` to test or use a custom concept map.
-- **Export selection**: `clyph export` writes the whole catalog when no selector is passed. `--names`, `--family`, and `--semantic` select records by exact name, Nerd Font family, and concept respectively; duplicates collapse and output is sorted by glyph name. `--output` writes atomically to a file; omit it or use `-` for stdout.
+- **Sets**: built-in sets are embedded in the binary (`data/sets.json`). User sets merge over built-ins from `~/.clyph/config/sets.json`; set `CLYPH_SETS_PATH` to merge a specific file instead. User config is separate from refreshable catalog data so `clyph update` never overwrites it.
+- **Export selection**: `clyph export` writes the whole catalog when no selector is passed. `--names`, `--family`, `--semantic`, and `--set` select records by exact name, Nerd Font family, concept, and curated set respectively; duplicates collapse and output is sorted by glyph name. `--output` writes atomically to a file; omit it or use `-` for stdout.
 
 ## Failure modes
 

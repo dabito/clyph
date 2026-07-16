@@ -82,6 +82,21 @@ func TestExportSemanticAndOutput(t *testing.T) {
 	}
 }
 
+func TestExportSet(t *testing.T) {
+	env := setTestEnv(t)
+	code, out, errOut := captureCmd(t, cmdExport, []string{"--set", "prompt", "--format", "json"}, env)
+	if code != 0 {
+		t.Fatalf("export set failed: %s", errOut)
+	}
+	var resp exportResponse
+	if err := json.Unmarshal([]byte(out), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if resp.Count != 2 || resp.Records[0].Name != "nf-fa-circle" || resp.Records[1].Name != "nf-md-check" {
+		t.Fatalf("unexpected set export: %+v", resp)
+	}
+}
+
 func TestExportErrors(t *testing.T) {
 	env := exportEnv(t)
 	if code, _, errOut := captureCmd(t, cmdExport, []string{"--format", "yaml"}, env); code != 2 || !strings.Contains(errOut, "invalid --format") {

@@ -475,7 +475,7 @@ func parseAliasArgs(args []string) (name, op, value string, jsonOut bool, err er
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: clyph <search|get|glyph|codepoint|identify|fmt|semantic|export|families|stats|update|label|alias|version> ...")
+	fmt.Fprintln(os.Stderr, "usage: clyph <search|get|glyph|codepoint|identify|fmt|semantic|set|export|families|stats|update|label|alias|version> ...")
 }
 
 var commandUsage = map[string]string{
@@ -488,8 +488,9 @@ var commandUsage = map[string]string{
 	"alias":     "usage: clyph alias <name> <add|rm> <value> [--json]",
 	"identify":  "usage: clyph identify <glyph...> [--json]   (reads glyphs from stdin if none given)",
 	"fmt":       "usage: clyph fmt <name> [--format html|css|unicode|js|hex|octal|all] [--json]",
-	"export":    "usage: clyph export [--format json|css|ts|go] [--names a,b] [--family nf-md|md] [--semantic success,warning] [--output <path>]",
+	"export":    "usage: clyph export [--format json|css|ts|go] [--names a,b] [--family nf-md|md] [--semantic success,warning] [--set status,git] [--output <path>]",
 	"semantic":  "usage: clyph semantic <concept> [--all] [--json]",
+	"set":       "usage: clyph set list [--json]\n       clyph set show <name> [--json]\n       clyph set glyph <set> <key> [--json]",
 	"families":  "usage: clyph families [--limit N] [--json]",
 	"stats":     "usage: clyph stats [--json]",
 }
@@ -539,6 +540,8 @@ func run(args []string) int {
 		return cmdFmt(rest)
 	case "semantic":
 		return cmdSemantic(rest)
+	case "set":
+		return cmdSet(rest)
 	case "export":
 		return cmdExport(rest)
 	case "families":

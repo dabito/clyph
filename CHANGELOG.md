@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Built-in curated glyph sets (`status`, `git`, `ci`, `files`) plus `clyph set list|show|glyph`.
+- User set config at `~/.clyph/config/sets.json`, with `CLYPH_SETS_PATH` override.
+- `clyph export --set <name>` to generate assets from curated sets.
+
 ## [0.5.0] - 2026-07-14
 
 ### Added

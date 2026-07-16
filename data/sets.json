@@ -1,0 +1,51 @@
+{
+  "sets": {
+    "status": {
+      "description": "Common status-line states",
+      "glyphs": {
+        "success": "nf-md-check",
+        "warning": "nf-md-alert",
+        "error": "nf-md-close_circle",
+        "running": "nf-md-progress_clock",
+        "pending": "nf-md-clock_outline",
+        "info": "nf-md-information",
+        "disabled": "nf-md-cancel"
+      }
+    },
+    "git": {
+      "description": "Git and version-control indicators",
+      "glyphs": {
+        "branch": "nf-md-source_branch",
+        "commit": "nf-md-source_commit",
+        "merge": "nf-md-source_merge",
+        "pull": "nf-md-source_pull",
+        "dirty": "nf-md-pencil",
+        "clean": "nf-md-check",
+        "tag": "nf-md-tag"
+      }
+    },
+    "ci": {
+      "description": "CI/build/test states",
+      "glyphs": {
+        "passed": "nf-md-check_circle",
+        "failed": "nf-md-close_circle",
+        "running": "nf-md-progress_clock",
+        "queued": "nf-md-clock_outline",
+        "skipped": "nf-md-skip_next_circle",
+        "artifact": "nf-md-package_variant_closed"
+      }
+    },
+    "files": {
+      "description": "Common file and folder glyphs",
+      "glyphs": {
+        "file": "nf-md-file",
+        "folder": "nf-md-folder",
+        "open-folder": "nf-md-folder_open",
+        "config": "nf-md-cog",
+        "lock": "nf-md-lock",
+        "image": "nf-md-image",
+        "archive": "nf-md-folder_zip"
+      }
+    }
+  }
+}
